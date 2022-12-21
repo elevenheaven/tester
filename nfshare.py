@@ -46,7 +46,7 @@ async def get_file_id(message_id):
     return f"https://t.me/{asst.me.username}?start={rnd}"
 
 
-@ultroid_cmd(pattern="nfshare$")
+@ultroid_cmd(pattern="share$")
 async def shareable_link_gen(e):
     reply = await e.get_reply_message()
     if not (reply and reply.media):
@@ -81,7 +81,7 @@ async def start_get_file(e):
         return
 
     file_id, caption, msglink = get_db.get(args)
-    await e.reply(caption, file=file_id, noforwards=True)
+    await e.reply(caption, file=file_id)
     if udB.get("FILESHARE_LOGGER") == "True":
         txt = f"#FileShare_Logs !! \n\n • User {inline_mention(e.sender)} Opened [this file!]({msglink})"
         await asst.send_message(LOG_CHANNEL, txt)
