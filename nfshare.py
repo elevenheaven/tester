@@ -6,6 +6,7 @@
 
 ✘ CMD
 >> {i}share  < reply to media >
+>> {i}nfshare  < reply to media >
 
 >> Set redis key FILESHARE_LOGGER to True to enable Logging of Shared file.
 """
@@ -82,6 +83,44 @@ async def start_get_file(e):
 
     file_id, caption, msglink = get_db.get(args)
     await e.reply(caption, file=file_id, noforwards=True)
+
+@ultroid_cmd(pattern="share$")
+async def shareable_link_gen(e):
+    reply = await e.get_reply_message()
+    if not (reply and reply.media):
+        await eor(e, "Reply to any Media, to generate a Shareable Link")
+        return
+
+    eris = await eor(e, "...")
+    try:
+        fwd_media = await reply.forward_to(LOG_CHANNEL)
+    except Exception as fx:
+        await eris.edit(f"Error While forwarding media.\n {fx}")
+        return
+
+    message_ = await get_file_id(fwd_media.id)
+    await eris.edit(f"Here's your Shareable Link for this File! \n\n>> {message_}")
+
+
+@asst.on(events.NewMessage(
+    pattern=f"^/start (.*)",
+    func=lambda c: c.is_private,
+    incoming=True,
+))
+async def start_get_file(e):
+    args = e.pattern_match.group(1)
+    get_db = udB.get(KEY)
+    if not (args and get_db):
+        return
+
+    get_db = eval(get_db)
+    if get_db.get(args) is None:
+        await eod(e, "Not a Valid Key!")
+        return
+
+    file_id, caption, msglink = get_db.get(args)
+    await e.reply(caption, file=file_id)
+
     if udB.get("FILESHARE_LOGGER") == "True":
         txt = f"#FileShare_Logs !! \n\n • User {inline_mention(e.sender)} Opened [this file!]({msglink})"
         await asst.send_message(LOG_CHANNEL, txt)
